@@ -4,7 +4,7 @@ use libc::c_void;
 use libloading::Library;
 use lucet_module::{
     FunctionHandle, FunctionIndex, FunctionPointer, FunctionSpec, ModuleData, ModuleFeatures,
-    ModuleSignature, PublicKey, SerializedModule, Signature, VersionInfo, LUCET_MODULE_SYM,
+    ModuleSignature, PublicKey, SerializedModule, Signature, LUCET_MODULE_SYM,
 };
 use std::ffi::CStr;
 use std::mem::MaybeUninit;
