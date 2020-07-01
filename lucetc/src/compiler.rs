@@ -64,6 +64,7 @@ pub struct CompilerBuilder {
     count_instructions: bool,
     canonicalize_nans: bool,
     validator: Option<Validator>,
+    blade: String,
 }
 
 impl CompilerBuilder {
@@ -76,6 +77,7 @@ impl CompilerBuilder {
             count_instructions: false,
             canonicalize_nans: false,
             validator: None,
+            blade: "none".into(),
         }
     }
 
@@ -154,6 +156,15 @@ impl CompilerBuilder {
         self
     }
 
+    pub fn blade(&mut self, blade: String) {
+        self.blade = blade;
+    }
+
+    pub fn with_blade(mut self, blade: String) -> Self {
+        self.blade(blade);
+        self
+    }
+
     pub fn create<'a>(
         &'a self,
         wasm_binary: &'a [u8],
@@ -169,6 +180,7 @@ impl CompilerBuilder {
             self.count_instructions,
             &self.validator,
             self.canonicalize_nans,
+            self.blade.clone(),
         )
     }
 }
@@ -182,6 +194,7 @@ pub struct Compiler<'a> {
     count_instructions: bool,
     module_translation_state: ModuleTranslationState,
     canonicalize_nans: bool,
+    blade: String,
 }
 
 impl<'a> Compiler<'a> {
@@ -195,8 +208,9 @@ impl<'a> Compiler<'a> {
         count_instructions: bool,
         validator: &Option<Validator>,
         canonicalize_nans: bool,
+        blade: String,
     ) -> Result<Self, Error> {
-        let isa = Self::target_isa(target.clone(), opt_level, &cpu_features, canonicalize_nans)?;
+        let isa = Self::target_isa(target.clone(), opt_level, &cpu_features, canonicalize_nans, &blade)?;
 
         let frontend_config = isa.frontend_config();
         let mut module_info = ModuleInfo::new(frontend_config.clone());
@@ -250,6 +264,7 @@ impl<'a> Compiler<'a> {
             module_translation_state,
             target,
             canonicalize_nans,
+            blade,
         })
     }
 
@@ -475,6 +490,7 @@ impl<'a> Compiler<'a> {
                 self.opt_level,
                 &self.cpu_features,
                 self.canonicalize_nans,
+                self.blade,
             )?,
         ))
     }
@@ -484,12 +500,14 @@ impl<'a> Compiler<'a> {
         opt_level: OptLevel,
         cpu_features: &CpuFeatures,
         canonicalize_nans: bool,
+        blade: impl AsRef<str>,
     ) -> Result<Box<dyn TargetIsa>, Error> {
         let mut flags_builder = settings::builder();
         let isa_builder = cpu_features.isa_builder(target)?;
         flags_builder.enable("enable_verifier").unwrap();
         flags_builder.enable("is_pic").unwrap();
         flags_builder.set("opt_level", opt_level.to_flag()).unwrap();
+        flags_builder.set("blade", blade.as_ref()).unwrap();
         if canonicalize_nans {
             flags_builder.enable("enable_nan_canonicalization").unwrap();
         }

@@ -122,6 +122,7 @@ pub struct Options {
     pub count_instructions: bool,
     pub error_style: ErrorStyle,
     pub target: Triple,
+    pub blade: String,
 }
 
 impl Options {
@@ -219,6 +220,11 @@ impl Options {
             Some(_) => panic!("unknown value for error-style"),
         };
 
+        let blade = match m.value_of("blade") {
+            None => "none".into(),
+            Some(s) => s.into(),
+        };
+
         Ok(Options {
             output,
             input,
@@ -241,6 +247,7 @@ impl Options {
             count_instructions,
             error_style,
             target,
+            blade,
         })
     }
     pub fn get() -> Result<Self, Error> {
@@ -458,6 +465,13 @@ SSE3 but not AVX:
                     .takes_value(true)
                     .possible_values(&["human", "json"])
                     .help("Style of error reporting (default: human)"),
+            )
+            .arg(
+                Arg::with_name("blade")
+                    .long("--blade")
+                    .takes_value(true)
+                    .possible_values(&["none", "lfence", "lfence_per_block", "slh"])
+                    .help("Which Blade Spectre mitigation to use, if any"),
             )
             .get_matches();
 
