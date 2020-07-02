@@ -104,8 +104,10 @@ pub trait LucetcOpts {
     fn with_count_instructions(self, enable_count: bool) -> Self;
     fn canonicalize_nans(&mut self, enable_canonicalize_nans: bool);
     fn with_canonicalize_nans(self, enable_canonicalize_nans: bool) -> Self;
-    fn blade(&mut self, blade: String);
-    fn with_blade(self, blade: String) -> Self;
+    fn blade_type(&mut self, blade_type: String);
+    fn with_blade_type(self, blade_type: String) -> Self;
+    fn blade_v1_1(&mut self, enable_blade_v1_1: bool);
+    fn with_blade_v1_1(self, enable_blade_v1_1: bool) -> Self;
 }
 
 impl<T: AsLucetc> LucetcOpts for T {
@@ -261,14 +263,23 @@ impl<T: AsLucetc> LucetcOpts for T {
         self
     }
 
-    fn blade(&mut self, blade: String) {
+    fn blade_type(&mut self, blade_type: String) {
         self.as_lucetc()
             .builder
-            .blade(blade);
+            .blade_type(blade_type);
     }
 
-    fn with_blade(mut self, blade: String) -> Self {
-        self.blade(blade);
+    fn with_blade_type(mut self, blade_type: String) -> Self {
+        self.blade_type(blade_type);
+        self
+    }
+
+    fn blade_v1_1(&mut self, enable_blade_v1_1: bool) {
+        self.as_lucetc().builder.blade_v1_1(enable_blade_v1_1);
+    }
+
+    fn with_blade_v1_1(mut self, enable_blade_v1_1: bool) -> Self {
+        self.blade_v1_1(enable_blade_v1_1);
         self
     }
 }

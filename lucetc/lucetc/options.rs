@@ -122,7 +122,8 @@ pub struct Options {
     pub count_instructions: bool,
     pub error_style: ErrorStyle,
     pub target: Triple,
-    pub blade: String,
+    pub blade_type: String,
+    pub blade_v1_1: bool,
 }
 
 impl Options {
@@ -220,10 +221,11 @@ impl Options {
             Some(_) => panic!("unknown value for error-style"),
         };
 
-        let blade = match m.value_of("blade") {
+        let blade_type = match m.value_of("blade_type") {
             None => "none".into(),
             Some(s) => s.into(),
         };
+        let blade_v1_1 = m.is_present("blade_v1_1");
 
         Ok(Options {
             output,
@@ -247,7 +249,8 @@ impl Options {
             count_instructions,
             error_style,
             target,
-            blade,
+            blade_type,
+            blade_v1_1,
         })
     }
     pub fn get() -> Result<Self, Error> {
@@ -467,11 +470,17 @@ SSE3 but not AVX:
                     .help("Style of error reporting (default: human)"),
             )
             .arg(
-                Arg::with_name("blade")
-                    .long("--blade")
+                Arg::with_name("blade_type")
+                    .long("--blade-type")
                     .takes_value(true)
-                    .possible_values(&["none", "lfence", "lfence_per_block", "slh_with_1_1", "slh_no_1_1"])
+                    .possible_values(&["none", "lfence", "lfence_per_block", "slh"])
                     .help("Which Blade Spectre mitigation to use, if any"),
+            )
+            .arg(
+                Arg::with_name("blade_v1_1")
+                    .long("--blade-v1-1")
+                    .takes_value(false)
+                    .help("Blade: also protect from Spectre v1.1 attacks, not just v1")
             )
             .get_matches();
 
