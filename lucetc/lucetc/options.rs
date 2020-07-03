@@ -473,7 +473,7 @@ SSE3 but not AVX:
                 Arg::with_name("blade_type")
                     .long("--blade-type")
                     .takes_value(true)
-                    .possible_values(&["none", "lfence", "lfence_per_block", "slh"])
+                    .possible_values(&["none", "baseline", "lfence", "lfence_per_block", "slh"])
                     .help("Which Blade Spectre mitigation to use, if any"),
             )
             .arg(
