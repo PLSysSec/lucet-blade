@@ -124,6 +124,7 @@ pub struct Options {
     pub target: Triple,
     pub blade_type: String,
     pub blade_v1_1: bool,
+    pub switchblade_callconv: String,
 }
 
 impl Options {
@@ -226,6 +227,10 @@ impl Options {
             Some(s) => s.into(),
         };
         let blade_v1_1 = m.is_present("blade_v1_1");
+        let switchblade_callconv = match m.value_of("switchblade_callconv") {
+            None => "not_not".into(),
+            Some(s) => s.into(),
+        };
 
         Ok(Options {
             output,
@@ -251,6 +256,7 @@ impl Options {
             target,
             blade_type,
             blade_v1_1,
+            switchblade_callconv,
         })
     }
     pub fn get() -> Result<Self, Error> {
@@ -481,6 +487,13 @@ SSE3 but not AVX:
                     .long("--blade-v1-1")
                     .takes_value(false)
                     .help("Blade: also protect from Spectre v1.1 attacks, not just v1")
+            )
+            .arg(
+                Arg::with_name("switchblade_callconv")
+                    .long("--switchblade-callconv")
+                    .takes_value(true)
+                    .possible_values(&["not_not", "not_may", "may_not", "may_may"])
+                    .help("Switchblade: which calling convention to use")
             )
             .get_matches();
 

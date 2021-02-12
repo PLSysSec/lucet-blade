@@ -102,7 +102,8 @@ pub fn run(opts: &Options) -> Result<(), Error> {
         .with_cpu_features(opts.cpu_features.clone())
         .with_target(opts.target.clone())
         .with_blade_type(opts.blade_type.clone())
-        .with_blade_v1_1(opts.blade_v1_1);
+        .with_blade_v1_1(opts.blade_v1_1)
+        .with_switchblade_callconv(opts.switchblade_callconv.clone());
 
     if let Some(validator) = validator.take() {
         c.validator(validator);

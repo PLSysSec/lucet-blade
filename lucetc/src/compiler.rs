@@ -66,6 +66,7 @@ pub struct CompilerBuilder {
     validator: Option<Validator>,
     blade_type: String,
     blade_v1_1: bool,
+    switchblade_callconv: String,
 }
 
 impl CompilerBuilder {
@@ -80,6 +81,7 @@ impl CompilerBuilder {
             validator: None,
             blade_type: "none".into(),
             blade_v1_1: false,
+            switchblade_callconv: "not_not".into(),
         }
     }
 
@@ -176,6 +178,15 @@ impl CompilerBuilder {
         self
     }
 
+    pub fn switchblade_callconv(&mut self, switchblade_callconv: String) {
+        self.switchblade_callconv = switchblade_callconv;
+    }
+
+    pub fn with_switchblade_callconv(mut self, switchblade_callconv: String) -> Self {
+        self.switchblade_callconv(switchblade_callconv);
+        self
+    }
+
     pub fn create<'a>(
         &'a self,
         wasm_binary: &'a [u8],
@@ -193,6 +204,7 @@ impl CompilerBuilder {
             self.canonicalize_nans,
             self.blade_type.clone(),
             self.blade_v1_1,
+            self.switchblade_callconv.clone(),
         )
     }
 }
@@ -208,6 +220,7 @@ pub struct Compiler<'a> {
     canonicalize_nans: bool,
     blade_type: String,
     blade_v1_1: bool,
+    switchblade_callconv: String,
 }
 
 impl<'a> Compiler<'a> {
@@ -223,8 +236,9 @@ impl<'a> Compiler<'a> {
         canonicalize_nans: bool,
         blade_type: String,
         blade_v1_1: bool,
+        switchblade_callconv: String,
     ) -> Result<Self, Error> {
-        let isa = Self::target_isa(target.clone(), opt_level, &cpu_features, canonicalize_nans, &blade_type, blade_v1_1)?;
+        let isa = Self::target_isa(target.clone(), opt_level, &cpu_features, canonicalize_nans, &blade_type, blade_v1_1, &switchblade_callconv)?;
 
         let frontend_config = isa.frontend_config();
         let mut module_info = ModuleInfo::new(frontend_config.clone());
@@ -280,6 +294,7 @@ impl<'a> Compiler<'a> {
             canonicalize_nans,
             blade_type,
             blade_v1_1,
+            switchblade_callconv,
         })
     }
 
@@ -507,6 +522,7 @@ impl<'a> Compiler<'a> {
                 self.canonicalize_nans,
                 self.blade_type,
                 self.blade_v1_1,
+                self.switchblade_callconv,
             )?,
         ))
     }
@@ -518,6 +534,7 @@ impl<'a> Compiler<'a> {
         canonicalize_nans: bool,
         blade_type: impl AsRef<str>,
         blade_v1_1: bool,
+        switchblade_callconv: impl AsRef<str>,
     ) -> Result<Box<dyn TargetIsa>, Error> {
         let mut flags_builder = settings::builder();
         let isa_builder = cpu_features.isa_builder(target)?;
@@ -525,6 +542,7 @@ impl<'a> Compiler<'a> {
         flags_builder.enable("is_pic").unwrap();
         flags_builder.set("opt_level", opt_level.to_flag()).unwrap();
         flags_builder.set("blade_type", blade_type.as_ref()).unwrap();
+        flags_builder.set("switchblade_callconv", switchblade_callconv.as_ref()).unwrap();
         if canonicalize_nans {
             flags_builder.enable("enable_nan_canonicalization").unwrap();
         }

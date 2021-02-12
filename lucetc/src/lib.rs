@@ -108,6 +108,8 @@ pub trait LucetcOpts {
     fn with_blade_type(self, blade_type: String) -> Self;
     fn blade_v1_1(&mut self, enable_blade_v1_1: bool);
     fn with_blade_v1_1(self, enable_blade_v1_1: bool) -> Self;
+    fn switchblade_callconv(&mut self, switchblade_callconv: String);
+    fn with_switchblade_callconv(self, switchblade_callconv: String) -> Self;
 }
 
 impl<T: AsLucetc> LucetcOpts for T {
@@ -280,6 +282,17 @@ impl<T: AsLucetc> LucetcOpts for T {
 
     fn with_blade_v1_1(mut self, enable_blade_v1_1: bool) -> Self {
         self.blade_v1_1(enable_blade_v1_1);
+        self
+    }
+
+    fn switchblade_callconv(&mut self, switchblade_callconv: String) {
+        self.as_lucetc()
+            .builder
+            .switchblade_callconv(switchblade_callconv);
+    }
+
+    fn with_switchblade_callconv(mut self, switchblade_callconv: String) -> Self {
+        self.switchblade_callconv(switchblade_callconv);
         self
     }
 }
