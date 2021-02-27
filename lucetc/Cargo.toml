@@ -43,6 +43,7 @@ serde = "1.0"
 serde_json = "1.0"
 thiserror = "1.0.4"
 raw-cpuid = "6.0.0"
+json = "0.12.4"
 
 [package.metadata.deb]
 name = "fst-lucetc"

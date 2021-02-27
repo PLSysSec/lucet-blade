@@ -161,6 +161,8 @@ impl<'a> ModuleDecls<'a> {
             }
         }
 
+        let mut function_to_index_map: HashMap<String, usize> = HashMap::new();
+
         for ix in 0..decls.info.functions.len() {
             let func_index = UniqueFuncIndex::new(ix);
             let import_info = import_name_for(func_index, decls, bindings)?;
@@ -172,12 +174,14 @@ impl<'a> ModuleDecls<'a> {
                     // if a function is an export and import, it will not have a real function body
                     // in this program, and we must not declare it with Linkage::Export (there will
                     // never be a define to satisfy the symbol!)
-                    decls.declare_function(clif_module, import_sym, Linkage::Import, func_index)?;
+                    decls.declare_function(clif_module, import_sym.clone(), Linkage::Import, func_index)?;
+                    function_to_index_map.insert(import_sym, ix);
                 }
                 (None, Some(export_sym)) => {
                     // This is a function that is only exported, so there will be a body in this
                     // artifact. We can declare the export.
-                    decls.declare_function(clif_module, export_sym, Linkage::Export, func_index)?;
+                    decls.declare_function(clif_module, export_sym.clone(), Linkage::Export, func_index)?;
+                    function_to_index_map.insert(export_sym, ix);
                 }
                 (None, None) => {
                     // No import or export for this function, which means that it is local. We can
@@ -185,10 +189,23 @@ impl<'a> ModuleDecls<'a> {
                     // make up a placeholder name for it using its index.
                     let local_sym = custom_name_for(ix, func_index, decls)
                         .unwrap_or_else(|| format!("guest_func_{}", ix));
-                    decls.declare_function(clif_module, local_sym, Linkage::Local, func_index)?;
+                    decls.declare_function(clif_module, local_sym.clone(), Linkage::Local, func_index)?;
+                    function_to_index_map.insert(local_sym, ix);
                 }
             }
         }
+
+        if std::env::var("DUMP_FUNCTION_INDEX_MAP").is_ok() {
+            let mut json_object = json::JsonValue::new_object();
+            for (function, index) in function_to_index_map {
+                json_object[function] = index.into();
+            }
+            use std::io::Write;
+            let filename = "function_index_map.json";
+            let mut f = std::fs::File::create(filename).unwrap();
+            writeln!(f, "{:#}", json_object).unwrap();
+        }
+
         Ok(())
     }
 
